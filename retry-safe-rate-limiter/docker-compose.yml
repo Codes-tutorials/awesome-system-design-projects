@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  redis-retry:
+    image: redis:7.2-alpine
+    container_name: redis-retry-safe
+    ports:
+      - "6381:6379" # Port 6381 to avoid conflicts
+    command: redis-server --save 20 1 --loglevel warning

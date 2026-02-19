@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:7.0
+    container_name: antishake-redis
+    ports:
+      - "6380:6379" # Use 6380 to avoid conflict with other demos
+    command: redis-server --appendonly yes
