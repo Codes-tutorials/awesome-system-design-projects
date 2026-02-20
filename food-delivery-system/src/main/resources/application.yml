@@ -1,0 +1,235 @@
+spring:
+  application:
+    name: food-delivery-system
+  
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/food_delivery_db
+    username: ${DB_USERNAME:food_delivery_user}
+    password: ${DB_PASSWORD:password123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  
+  # Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+  
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      batch-size: 16384
+      linger-ms: 1
+      buffer-memory: 33554432
+    consumer:
+      group-id: food-delivery-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        spring.json.trusted.packages: "com.fooddelivery.model,com.fooddelivery.dto"
+  
+  # Mail Configuration
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+    password: ${MAIL_PASSWORD:your-app-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+  
+  # File Upload Configuration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  
+  # Security Configuration
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
+            scope: profile, email
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+
+# Management and Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging Configuration
+logging:
+  level:
+    com.fooddelivery: INFO
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/food-delivery-system.log
+
+# Custom Application Properties
+app:
+  # JWT Configuration
+  jwt:
+    secret: ${JWT_SECRET:mySecretKey123456789012345678901234567890}
+    expiration: 86400000 # 24 hours in milliseconds
+    refresh-expiration: 604800000 # 7 days in milliseconds
+  
+  # File Storage
+  file:
+    upload-dir: ${FILE_UPLOAD_DIR:./uploads}
+    max-size: 10MB
+  
+  # External API Keys
+  google:
+    maps:
+      api-key: ${GOOGLE_MAPS_API_KEY:your-google-maps-api-key}
+  
+  stripe:
+    secret:
+      key: ${STRIPE_SECRET_KEY:sk_test_your_stripe_secret_key}
+    public:
+      key: ${STRIPE_PUBLIC_KEY:pk_test_your_stripe_public_key}
+  
+  twilio:
+    account-sid: ${TWILIO_ACCOUNT_SID:your-twilio-account-sid}
+    auth-token: ${TWILIO_AUTH_TOKEN:your-twilio-auth-token}
+    phone-number: ${TWILIO_PHONE_NUMBER:+1234567890}
+  
+  firebase:
+    config-path: ${FIREBASE_CONFIG_PATH:./firebase-service-account.json}
+  
+  aws:
+    s3:
+      bucket-name: ${AWS_S3_BUCKET:food-delivery-uploads}
+      region: ${AWS_REGION:us-east-1}
+      access-key: ${AWS_ACCESS_KEY:your-aws-access-key}
+      secret-key: ${AWS_SECRET_KEY:your-aws-secret-key}
+  
+  # Business Configuration
+  delivery:
+    max-radius-km: 15
+    base-fee: 2.99
+    per-km-rate: 0.50
+    free-delivery-threshold: 25.00
+  
+  order:
+    max-items: 50
+    preparation-buffer-minutes: 5
+    delivery-buffer-minutes: 10
+  
+  rating:
+    min-value: 1
+    max-value: 5
+  
+  # Rate Limiting
+  rate-limit:
+    requests-per-minute: 60
+    burst-capacity: 100
+
+# Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      paymentService:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        wait-duration-in-open-state: 30s
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 2s
+      
+      locationService:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 20s
+        failure-rate-threshold: 60
+  
+  retry:
+    instances:
+      paymentService:
+        max-attempts: 3
+        wait-duration: 1s
+        exponential-backoff-multiplier: 2
+      
+      notificationService:
+        max-attempts: 2
+        wait-duration: 500ms
+
+# Springdoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: true

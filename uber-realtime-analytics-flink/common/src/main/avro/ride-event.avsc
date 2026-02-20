@@ -1,0 +1,134 @@
+{
+  "type": "record",
+  "name": "RideEvent",
+  "namespace": "com.uber.analytics.events",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "Unique identifier for the event"
+    },
+    {
+      "name": "eventType",
+      "type": {
+        "type": "enum",
+        "name": "RideEventType",
+        "symbols": [
+          "RIDE_REQUESTED",
+          "DRIVER_ASSIGNED",
+          "DRIVER_ARRIVED",
+          "RIDE_STARTED",
+          "RIDE_COMPLETED",
+          "RIDE_CANCELLED",
+          "PAYMENT_PROCESSED"
+        ]
+      },
+      "doc": "Type of the ride event"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "Event timestamp in milliseconds"
+    },
+    {
+      "name": "rideId",
+      "type": "string",
+      "doc": "Unique identifier for the ride"
+    },
+    {
+      "name": "riderId",
+      "type": "string",
+      "doc": "Unique identifier for the rider"
+    },
+    {
+      "name": "driverId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Unique identifier for the driver (null if not assigned)"
+    },
+    {
+      "name": "pickupLocation",
+      "type": {
+        "type": "record",
+        "name": "Location",
+        "fields": [
+          {"name": "latitude", "type": "double"},
+          {"name": "longitude", "type": "double"},
+          {"name": "address", "type": ["null", "string"], "default": null}
+        ]
+      },
+      "doc": "Pickup location coordinates"
+    },
+    {
+      "name": "dropoffLocation",
+      "type": ["null", "Location"],
+      "default": null,
+      "doc": "Dropoff location coordinates"
+    },
+    {
+      "name": "rideType",
+      "type": {
+        "type": "enum",
+        "name": "RideType",
+        "symbols": ["UBER_X", "UBER_XL", "UBER_BLACK", "UBER_POOL", "UBER_EATS"]
+      },
+      "doc": "Type of ride service"
+    },
+    {
+      "name": "estimatedFare",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Estimated fare for the ride"
+    },
+    {
+      "name": "actualFare",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Actual fare charged for the ride"
+    },
+    {
+      "name": "distance",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Distance of the ride in kilometers"
+    },
+    {
+      "name": "duration",
+      "type": ["null", "long"],
+      "default": null,
+      "doc": "Duration of the ride in seconds"
+    },
+    {
+      "name": "surgeMultiplier",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Surge pricing multiplier"
+    },
+    {
+      "name": "paymentMethod",
+      "type": ["null", {
+        "type": "enum",
+        "name": "PaymentMethod",
+        "symbols": ["CREDIT_CARD", "DEBIT_CARD", "DIGITAL_WALLET", "CASH"]
+      }],
+      "default": null,
+      "doc": "Payment method used"
+    },
+    {
+      "name": "rating",
+      "type": ["null", "int"],
+      "default": null,
+      "doc": "Rating given by rider (1-5)"
+    },
+    {
+      "name": "metadata",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {},
+      "doc": "Additional metadata as key-value pairs"
+    }
+  ]
+}

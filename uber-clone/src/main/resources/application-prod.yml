@@ -1,0 +1,248 @@
+spring:
+  # Production Database Configuration
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://prod-db-host:5432/rideshare_prod}
+    username: ${DATABASE_USERNAME:rideshare_prod_user}
+    password: ${DATABASE_PASSWORD:secure_prod_password}
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 10
+      idle-timeout: 600000
+      connection-timeout: 30000
+      leak-detection-threshold: 60000
+      connection-test-query: SELECT 1
+  
+  # JPA Configuration for Production
+  jpa:
+    hibernate:
+      ddl-auto: validate # Never auto-create/update schema in production
+    show-sql: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
+        generate_statistics: false
+        cache:
+          use_second_level_cache: true
+          use_query_cache: true
+          region:
+            factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
+  
+  # Production Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:prod-redis-cluster.cache.amazonaws.com}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:secure_redis_password}
+      ssl: true
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: 2000ms
+        cluster:
+          refresh:
+            adaptive: true
+            period: 30s
+  
+  # Production Kafka Configuration
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka-cluster-1:9092,kafka-cluster-2:9092,kafka-cluster-3:9092}
+    producer:
+      acks: all
+      retries: 10
+      batch-size: 32768
+      linger-ms: 10
+      buffer-memory: 67108864
+      compression-type: snappy
+      enable-idempotence: true
+      max-in-flight-requests-per-connection: 5
+    consumer:
+      group-id: rideshare-prod
+      session-timeout-ms: 30000
+      heartbeat-interval-ms: 10000
+      max-poll-records: 500
+      fetch-min-size: 1024
+      fetch-max-wait: 500
+  
+  # Production Mail Configuration
+  mail:
+    host: ${MAIL_HOST:smtp.sendgrid.net}
+    port: 587
+    username: ${MAIL_USERNAME:apikey}
+    password: ${MAIL_PASSWORD:your-sendgrid-api-key}
+
+# Production Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  compression:
+    enabled: true
+  http2:
+    enabled: true
+  ssl:
+    enabled: ${SSL_ENABLED:false}
+    key-store: ${SSL_KEYSTORE_PATH:classpath:keystore.p12}
+    key-store-password: ${SSL_KEYSTORE_PASSWORD:changeit}
+    key-store-type: PKCS12
+
+# Production Management Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+        step: 30s
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      slo:
+        http.server.requests: 50ms,100ms,200ms,500ms,1s,2s,5s
+
+# Production Logging Configuration
+logging:
+  level:
+    com.rideshare: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+    org.springframework.kafka: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
+  file:
+    name: /var/log/rideshare/application.log
+    max-size: 100MB
+    max-history: 30
+    total-size-cap: 3GB
+
+# Production Application Configuration
+rideshare:
+  # JWT Configuration
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration: 3600000 # 1 hour in production
+  
+  # Google Maps API
+  google:
+    maps:
+      api-key: ${GOOGLE_MAPS_API_KEY}
+      rate-limit: 1000 # requests per day
+  
+  # Payment Configuration
+  stripe:
+    public-key: ${STRIPE_PUBLIC_KEY}
+    secret-key: ${STRIPE_SECRET_KEY}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+  
+  # Firebase Configuration
+  firebase:
+    service-account-key: ${FIREBASE_SERVICE_ACCOUNT_KEY}
+    project-id: ${FIREBASE_PROJECT_ID}
+  
+  # Twilio Configuration
+  twilio:
+    account-sid: ${TWILIO_ACCOUNT_SID}
+    auth-token: ${TWILIO_AUTH_TOKEN}
+    phone-number: ${TWILIO_PHONE_NUMBER}
+  
+  # AWS Configuration
+  aws:
+    s3:
+      bucket-name: ${AWS_S3_BUCKET}
+      region: ${AWS_REGION}
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    cloudfront:
+      distribution-domain: ${AWS_CLOUDFRONT_DOMAIN}
+  
+  # Enhanced Rate Limiting for Production
+  rate-limit:
+    trip-requests:
+      capacity: 5 # More restrictive in production
+      refill-rate: 1
+      refill-period: 120 # 2 minutes
+    driver-location-updates:
+      capacity: 200
+      refill-rate: 20
+      refill-period: 60
+    api-calls:
+      capacity: 1000
+      refill-rate: 100
+      refill-period: 60
+  
+  # Production Surge Pricing
+  surge:
+    enabled: true
+    max-multiplier: 5.0
+    calculation-radius-km: 3.0
+    demand-threshold: 0.9
+    update-interval-seconds: 30
+  
+  # Production Trip Configuration
+  trip:
+    max-search-radius-km: 20.0
+    driver-response-timeout-seconds: 45
+    trip-timeout-minutes: 15
+    max-drivers-to-notify: 10
+    retry-attempts: 3
+  
+  # Production Driver Configuration
+  driver:
+    location-update-interval-seconds: 5
+    max-inactive-minutes: 3
+    min-acceptance-rate: 80.0
+    min-rating: 4.0
+    background-check-required: true
+  
+  # Circuit Breaker Configuration
+  circuit-breaker:
+    google-maps:
+      failure-rate-threshold: 50
+      wait-duration-in-open-state: 30s
+      sliding-window-size: 10
+    payment-service:
+      failure-rate-threshold: 30
+      wait-duration-in-open-state: 60s
+      sliding-window-size: 20
+  
+  # Monitoring and Alerting
+  monitoring:
+    enabled: true
+    alert-thresholds:
+      error-rate: 5.0 # percentage
+      response-time-p95: 2000 # milliseconds
+      active-connections: 1000
+  
+  # Security Configuration
+  security:
+    cors:
+      allowed-origins: ${ALLOWED_ORIGINS:https://rideshare.com,https://driver.rideshare.com}
+    rate-limiting:
+      enabled: true
+      requests-per-minute: 60
+    encryption:
+      enabled: true
+      algorithm: AES-256-GCM
+
+# Disable Swagger in Production
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false

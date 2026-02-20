@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postman Clone Test</title>
+</head>
+<body>
+    <h1>Testing Postman Clone Application</h1>
+    <div id="test-results"></div>
+    
+    <script>
+        // Test the HTTP client functionality
+        async function testHttpClient() {
+            const results = document.getElementById('test-results');
+            
+            try {
+                // Load the HTTP client
+                const script = document.createElement('script');
+                script.src = 'js/http-client.js';
+                document.head.appendChild(script);
+                
+                script.onload = async () => {
+                    results.innerHTML += '<p>✅ HTTP Client loaded successfully</p>';
+                    
+                    // Test a simple GET request
+                    try {
+                        const response = await window.httpClient.makeRequest({
+                            method: 'GET',
+                            url: 'https://jsonplaceholder.typicode.com/posts/1',
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        });
+                        
+                        if (response.success) {
+                            results.innerHTML += '<p>✅ GET request successful</p>';
+                            results.innerHTML += `<p>Status: ${response.status} ${response.statusText}</p>`;
+                            results.innerHTML += `<p>Response time: ${response.responseTime}ms</p>`;
+                            results.innerHTML += `<p>Response size: ${response.size} bytes</p>`;
+                            results.innerHTML += '<pre>' + JSON.stringify(response.data, null, 2) + '</pre>';
+                        } else {
+                            results.innerHTML += '<p>❌ GET request failed: ' + response.error + '</p>';
+                        }
+                    } catch (error) {
+                        results.innerHTML += '<p>❌ Request error: ' + error.message + '</p>';
+                    }
+                };
+                
+                script.onerror = () => {
+                    results.innerHTML += '<p>❌ Failed to load HTTP Client</p>';
+                };
+                
+            } catch (error) {
+                results.innerHTML += '<p>❌ Test error: ' + error.message + '</p>';
+            }
+        }
+        
+        // Run test when page loads
+        window.addEventListener('load', testHttpClient);
+    </script>
+</body>
+</html>
+</text>
+</invoke>

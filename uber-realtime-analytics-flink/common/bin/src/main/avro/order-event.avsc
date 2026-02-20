@@ -1,0 +1,169 @@
+{
+  "type": "record",
+  "name": "OrderEvent",
+  "namespace": "com.uber.analytics.events",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "Unique identifier for the event"
+    },
+    {
+      "name": "eventType",
+      "type": {
+        "type": "enum",
+        "name": "OrderEventType",
+        "symbols": [
+          "ORDER_PLACED",
+          "ORDER_CONFIRMED",
+          "ORDER_PREPARING",
+          "ORDER_READY",
+          "ORDER_PICKED_UP",
+          "ORDER_DELIVERED",
+          "ORDER_CANCELLED"
+        ]
+      },
+      "doc": "Type of the order event"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "Event timestamp in milliseconds"
+    },
+    {
+      "name": "orderId",
+      "type": "string",
+      "doc": "Unique identifier for the order"
+    },
+    {
+      "name": "customerId",
+      "type": "string",
+      "doc": "Unique identifier for the customer"
+    },
+    {
+      "name": "restaurantId",
+      "type": "string",
+      "doc": "Unique identifier for the restaurant"
+    },
+    {
+      "name": "deliveryPartnerId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Unique identifier for the delivery partner"
+    },
+    {
+      "name": "items",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "OrderItem",
+          "fields": [
+            {"name": "itemId", "type": "string"},
+            {"name": "name", "type": "string"},
+            {"name": "quantity", "type": "int"},
+            {"name": "unitPrice", "type": "double"},
+            {"name": "totalPrice", "type": "double"}
+          ]
+        }
+      },
+      "doc": "List of items in the order"
+    },
+    {
+      "name": "totalAmount",
+      "type": "double",
+      "doc": "Total order amount"
+    },
+    {
+      "name": "deliveryFee",
+      "type": "double",
+      "doc": "Delivery fee charged"
+    },
+    {
+      "name": "taxes",
+      "type": "double",
+      "doc": "Taxes applied to the order"
+    },
+    {
+      "name": "discounts",
+      "type": "double",
+      "default": 0.0,
+      "doc": "Discounts applied to the order"
+    },
+    {
+      "name": "deliveryAddress",
+      "type": {
+        "type": "record",
+        "name": "Location",
+        "fields": [
+          {"name": "latitude", "type": "double"},
+          {"name": "longitude", "type": "double"},
+          {"name": "address", "type": ["null", "string"], "default": null}
+        ]
+      },
+      "doc": "Delivery address coordinates"
+    },
+    {
+      "name": "restaurantLocation",
+      "type": "Location",
+      "doc": "Restaurant location coordinates"
+    },
+    {
+      "name": "estimatedDeliveryTime",
+      "type": ["null", "long"],
+      "default": null,
+      "logicalType": "timestamp-millis",
+      "doc": "Estimated delivery time"
+    },
+    {
+      "name": "actualDeliveryTime",
+      "type": ["null", "long"],
+      "default": null,
+      "logicalType": "timestamp-millis",
+      "doc": "Actual delivery time"
+    },
+    {
+      "name": "preparationTime",
+      "type": ["null", "long"],
+      "default": null,
+      "doc": "Food preparation time in minutes"
+    },
+    {
+      "name": "deliveryTime",
+      "type": ["null", "long"],
+      "default": null,
+      "doc": "Delivery time in minutes"
+    },
+    {
+      "name": "paymentMethod",
+      "type": {
+        "type": "enum",
+        "name": "PaymentMethod",
+        "symbols": ["CREDIT_CARD", "DEBIT_CARD", "DIGITAL_WALLET", "CASH_ON_DELIVERY"]
+      },
+      "doc": "Payment method used"
+    },
+    {
+      "name": "orderRating",
+      "type": ["null", "int"],
+      "default": null,
+      "doc": "Rating given by customer (1-5)"
+    },
+    {
+      "name": "deliveryRating",
+      "type": ["null", "int"],
+      "default": null,
+      "doc": "Delivery rating given by customer (1-5)"
+    },
+    {
+      "name": "metadata",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {},
+      "doc": "Additional metadata as key-value pairs"
+    }
+  ]
+}

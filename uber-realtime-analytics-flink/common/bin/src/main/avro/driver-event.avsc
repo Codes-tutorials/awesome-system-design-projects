@@ -1,0 +1,125 @@
+{
+  "type": "record",
+  "name": "DriverEvent",
+  "namespace": "com.uber.analytics.events",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "Unique identifier for the event"
+    },
+    {
+      "name": "eventType",
+      "type": {
+        "type": "enum",
+        "name": "DriverEventType",
+        "symbols": [
+          "DRIVER_ONLINE",
+          "DRIVER_OFFLINE",
+          "LOCATION_UPDATE",
+          "STATUS_CHANGE",
+          "RIDE_ACCEPTED",
+          "RIDE_DECLINED",
+          "ARRIVED_AT_PICKUP",
+          "STARTED_TRIP",
+          "COMPLETED_TRIP"
+        ]
+      },
+      "doc": "Type of the driver event"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "Event timestamp in milliseconds"
+    },
+    {
+      "name": "driverId",
+      "type": "string",
+      "doc": "Unique identifier for the driver"
+    },
+    {
+      "name": "location",
+      "type": {
+        "type": "record",
+        "name": "Location",
+        "fields": [
+          {"name": "latitude", "type": "double"},
+          {"name": "longitude", "type": "double"},
+          {"name": "address", "type": ["null", "string"], "default": null}
+        ]
+      },
+      "doc": "Current driver location"
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "DriverStatus",
+        "symbols": [
+          "AVAILABLE",
+          "BUSY",
+          "OFFLINE",
+          "EN_ROUTE_TO_PICKUP",
+          "ARRIVED_AT_PICKUP",
+          "ON_TRIP"
+        ]
+      },
+      "doc": "Current driver status"
+    },
+    {
+      "name": "vehicleType",
+      "type": {
+        "type": "enum",
+        "name": "VehicleType",
+        "symbols": ["SEDAN", "SUV", "LUXURY", "MOTORCYCLE", "BICYCLE"]
+      },
+      "doc": "Type of vehicle"
+    },
+    {
+      "name": "rideId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Associated ride ID if applicable"
+    },
+    {
+      "name": "heading",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Vehicle heading in degrees (0-360)"
+    },
+    {
+      "name": "speed",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Vehicle speed in km/h"
+    },
+    {
+      "name": "batteryLevel",
+      "type": ["null", "int"],
+      "default": null,
+      "doc": "Battery level percentage for electric vehicles"
+    },
+    {
+      "name": "rating",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Driver's current rating"
+    },
+    {
+      "name": "totalTrips",
+      "type": ["null", "long"],
+      "default": null,
+      "doc": "Total number of trips completed"
+    },
+    {
+      "name": "metadata",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {},
+      "doc": "Additional metadata as key-value pairs"
+    }
+  ]
+}

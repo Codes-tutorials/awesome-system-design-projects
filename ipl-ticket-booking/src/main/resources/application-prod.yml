@@ -1,0 +1,178 @@
+spring:
+  # Production Database Configuration
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://prod-db:5432/ipl_booking_db}
+    username: ${DATABASE_USERNAME:ipl_user}
+    password: ${DATABASE_PASSWORD:ipl_password}
+    hikari:
+      maximum-pool-size: 100        # Higher pool for production load
+      minimum-idle: 20
+      connection-timeout: 30000
+      idle-timeout: 300000          # 5 minutes
+      max-lifetime: 900000          # 15 minutes
+      leak-detection-threshold: 30000
+  
+  # Production JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate            # Never auto-update in production
+    show-sql: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 100           # Larger batches for production
+          fetch_size: 100
+        connection:
+          provider_disables_autocommit: true
+        cache:
+          use_second_level_cache: true
+          use_query_cache: true
+  
+  # Production Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:prod-redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      ssl: ${REDIS_SSL:false}
+      lettuce:
+        pool:
+          max-active: 50            # Higher pool for production
+          max-idle: 20
+          min-idle: 5
+          max-wait: 2000ms
+        cluster:
+          refresh:
+            adaptive: true
+            period: 30s
+  
+  # Production Kafka Configuration
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:prod-kafka:9092}
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP:ipl-booking-service-prod}
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      max-poll-records: 500         # Higher batch size for production
+    producer:
+      acks: all                     # Strongest durability guarantee
+      retries: 10
+      batch-size: 32768             # 32KB batches
+      linger-ms: 10
+      buffer-memory: 67108864       # 64MB buffer
+      compression-type: lz4         # Better compression for production
+  
+  # Production Security
+  security:
+    jwt:
+      secret: ${JWT_SECRET}         # Must be provided via environment
+      expiration: ${JWT_EXPIRATION:3600000}  # 1 hour in production
+
+# Production Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  tomcat:
+    max-threads: 500               # Higher for production load
+    min-spare-threads: 50
+    max-connections: 20000         # Handle more connections
+    accept-count: 200
+    connection-timeout: 20000
+  compression:
+    enabled: true
+    min-response-size: 1024
+
+# Production Logging
+logging:
+  level:
+    com.ipl.ticketbooking: INFO
+    org.springframework.kafka: ERROR
+    org.hibernate.SQL: ERROR
+    org.redisson: ERROR
+    org.springframework.security: WARN
+  file:
+    name: /var/log/ipl-booking/application.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
+      total-size-cap: 3GB
+
+# Production Management
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+        step: 30s
+
+# Production Custom Properties
+ipl:
+  booking:
+    max-seats-per-booking: ${MAX_SEATS_PER_BOOKING:10}
+    seat-lock-duration-minutes: ${SEAT_LOCK_DURATION:10}
+    booking-fee-percentage: ${BOOKING_FEE_PERCENTAGE:0.05}
+    payment-timeout-minutes: ${PAYMENT_TIMEOUT:15}
+  
+  rate-limiting:
+    booking-requests-per-minute: ${BOOKING_RATE_LIMIT:5}
+    search-requests-per-minute: ${SEARCH_RATE_LIMIT:30}
+    login-requests-per-minute: ${LOGIN_RATE_LIMIT:10}
+    global-booking-limit-per-minute: ${GLOBAL_BOOKING_LIMIT:50000}  # Higher for production
+  
+  cache:
+    seat-availability-ttl: ${SEAT_CACHE_TTL:15}      # Shorter TTL for accuracy
+    match-details-ttl: ${MATCH_CACHE_TTL:600}        # 10 minutes
+    user-session-ttl: ${SESSION_CACHE_TTL:3600}      # 1 hour
+  
+  performance:
+    async-pool-size: ${ASYNC_POOL_SIZE:50}           # Larger pool
+    retry-max-attempts: ${RETRY_MAX_ATTEMPTS:5}
+    retry-delay-ms: ${RETRY_DELAY:200}
+    circuit-breaker-failure-threshold: ${CB_FAILURE_THRESHOLD:10}
+    circuit-breaker-timeout-ms: ${CB_TIMEOUT:30000}
+
+# Production Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      bookingService:
+        failure-rate-threshold: ${CB_FAILURE_RATE:30}
+        wait-duration-in-open-state: ${CB_WAIT_DURATION:60s}
+        sliding-window-size: ${CB_WINDOW_SIZE:20}
+        minimum-number-of-calls: ${CB_MIN_CALLS:10}
+  
+  retry:
+    instances:
+      bookingService:
+        max-attempts: ${RETRY_ATTEMPTS:5}
+        wait-duration: ${RETRY_WAIT:200ms}
+        exponential-backoff-multiplier: ${RETRY_MULTIPLIER:2}
+  
+  ratelimiter:
+    instances:
+      bookingService:
+        limit-for-period: ${RATE_LIMIT_PERIOD:1000}
+        limit-refresh-period: ${RATE_REFRESH:1s}
+        timeout-duration: ${RATE_TIMEOUT:100ms}
+
+# Production monitoring and alerting
+monitoring:
+  alerts:
+    high-cpu-threshold: 80
+    high-memory-threshold: 85
+    high-response-time-threshold: 2000
+    error-rate-threshold: 5
+  
+  metrics:
+    booking-success-rate: true
+    seat-lock-contention: true
+    rate-limit-violations: true
+    database-connection-pool: true

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postman Clone - REST API Client</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-paper-plane"></i>
+                    <h1>API Client</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="newRequestBtn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> New Request
+                    </button>
+                    <button id="collectionsBtn" class="btn btn-secondary">
+                        <i class="fas fa-folder"></i> Collections
+                    </button>
+                    <button id="historyBtn" class="btn btn-secondary">
+                        <i class="fas fa-history"></i> History
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-tabs">
+                    <button class="tab-btn active" data-tab="history">
+                        <i class="fas fa-history"></i> History
+                    </button>
+                    <button class="tab-btn" data-tab="collections">
+                        <i class="fas fa-folder"></i> Collections
+                    </button>
+                </div>
+
+                <!-- History Tab -->
+                <div class="tab-content active" id="historyTab">
+                    <div class="tab-header">
+                        <h3>Request History</h3>
+                        <button id="clearHistoryBtn" class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="history-list" id="historyList">
+                        <div class="empty-state">
+                            <i class="fas fa-clock"></i>
+                            <p>No requests yet</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Collections Tab -->
+                <div class="tab-content" id="collectionsTab">
+                    <div class="tab-header">
+                        <h3>Collections</h3>
+                        <button id="newCollectionBtn" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="collections-list" id="collectionsList">
+                        <div class="empty-state">
+                            <i class="fas fa-folder-open"></i>
+                            <p>No collections yet</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Request Builder -->
+            <main class="request-builder">
+                <!-- Request Configuration -->
+                <div class="request-config">
+                    <div class="request-line">
+                        <select id="methodSelect" class="method-select">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                            <option value="PATCH">PATCH</option>
+                            <option value="HEAD">HEAD</option>
+                            <option value="OPTIONS">OPTIONS</option>
+                        </select>
+                        <input type="url" id="urlInput" class="url-input" placeholder="Enter request URL (e.g., https://api.example.com/users)" />
+                        <button id="sendBtn" class="btn btn-primary send-btn">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+
+                    <div class="request-actions">
+                        <button id="saveBtn" class="btn btn-secondary">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                        <button id="clearBtn" class="btn btn-secondary">
+                            <i class="fas fa-eraser"></i> Clear
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Request Details Tabs -->
+                <div class="request-tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" data-tab="params">Params</button>
+                        <button class="tab-btn" data-tab="headers">Headers</button>
+                        <button class="tab-btn" data-tab="body">Body</button>
+                        <button class="tab-btn" data-tab="auth">Auth</button>
+                    </div>
+
+                    <!-- Params Tab -->
+                    <div class="tab-panel active" id="paramsTab">
+                        <div class="params-container">
+                            <div class="params-header">
+                                <h4>Query Parameters</h4>
+                                <button id="addParamBtn" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                            <div class="params-list" id="paramsList">
+                                <div class="param-row">
+                                    <input type="text" placeholder="Key" class="param-key" />
+                                    <input type="text" placeholder="Value" class="param-value" />
+                                    <button class="btn btn-sm btn-danger remove-param">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Headers Tab -->
+                    <div class="tab-panel" id="headersTab">
+                        <div class="headers-container">
+                            <div class="headers-header">
+                                <h4>Request Headers</h4>
+                                <button id="addHeaderBtn" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                            <div class="headers-list" id="headersList">
+                                <div class="header-row">
+                                    <input type="text" placeholder="Header Name" class="header-key" />
+                                    <input type="text" placeholder="Header Value" class="header-value" />
+                                    <button class="btn btn-sm btn-danger remove-header">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Body Tab -->
+                    <div class="tab-panel" id="bodyTab">
+                        <div class="body-container">
+                            <div class="body-type-selector">
+                                <label>
+                                    <input type="radio" name="bodyType" value="none" checked> None
+                                </label>
+                                <label>
+                                    <input type="radio" name="bodyType" value="json"> JSON
+                                </label>
+                                <label>
+                                    <input type="radio" name="bodyType" value="form"> Form Data
+                                </label>
+                                <label>
+                                    <input type="radio" name="bodyType" value="raw"> Raw Text
+                                </label>
+                            </div>
+
+                            <div class="body-content">
+                                <!-- JSON Body -->
+                                <div class="body-section" id="jsonBody" style="display: none;">
+                                    <textarea id="jsonTextarea" placeholder='{\n  "key": "value"\n}' rows="10"></textarea>
+                                    <div class="body-actions">
+                                        <button id="formatJsonBtn" class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-code"></i> Format JSON
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Form Data Body -->
+                                <div class="body-section" id="formBody" style="display: none;">
+                                    <div class="form-data-header">
+                                        <h4>Form Data</h4>
+                                        <button id="addFormFieldBtn" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-plus"></i> Add Field
+                                        </button>
+                                    </div>
+                                    <div class="form-data-list" id="formDataList">
+                                        <div class="form-field-row">
+                                            <input type="text" placeholder="Key" class="form-key" />
+                                            <input type="text" placeholder="Value" class="form-value" />
+                                            <button class="btn btn-sm btn-danger remove-form-field">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Raw Text Body -->
+                                <div class="body-section" id="rawBody" style="display: none;">
+                                    <textarea id="rawTextarea" placeholder="Enter raw text data..." rows="10"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Auth Tab -->
+                    <div class="tab-panel" id="authTab">
+                        <div class="auth-container">
+                            <div class="auth-type-selector">
+                                <label>
+                                    <input type="radio" name="authType" value="none" checked> No Auth
+                                </label>
+                                <label>
+                                    <input type="radio" name="authType" value="bearer"> Bearer Token
+                                </label>
+                                <label>
+                                    <input type="radio" name="authType" value="basic"> Basic Auth
+                                </label>
+                            </div>
+
+                            <div class="auth-content">
+                                <!-- Bearer Token -->
+                                <div class="auth-section" id="bearerAuth" style="display: none;">
+                                    <label for="bearerToken">Bearer Token:</label>
+                                    <input type="text" id="bearerToken" placeholder="Enter your bearer token" />
+                                </div>
+
+                                <!-- Basic Auth -->
+                                <div class="auth-section" id="basicAuth" style="display: none;">
+                                    <div class="basic-auth-fields">
+                                        <div class="field-group">
+                                            <label for="basicUsername">Username:</label>
+                                            <input type="text" id="basicUsername" placeholder="Username" />
+                                        </div>
+                                        <div class="field-group">
+                                            <label for="basicPassword">Password:</label>
+                                            <input type="password" id="basicPassword" placeholder="Password" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Response Section -->
+                <div class="response-section" id="responseSection" style="display: none;">
+                    <div class="response-header">
+                        <h3>Response</h3>
+                        <div class="response-meta">
+                            <span class="status-badge" id="statusBadge">200 OK</span>
+                            <span class="response-time" id="responseTime">0ms</span>
+                            <span class="response-size" id="responseSize">0 B</span>
+                        </div>
+                    </div>
+
+                    <div class="response-tabs">
+                        <div class="tab-buttons">
+                            <button class="tab-btn active" data-tab="response-body">Body</button>
+                            <button class="tab-btn" data-tab="response-headers">Headers</button>
+                        </div>
+
+                        <!-- Response Body -->
+                        <div class="tab-panel active" id="responseBodyTab">
+                            <div class="response-body-header">
+                                <div class="response-format-selector">
+                                    <button id="prettyBtn" class="btn btn-sm btn-secondary active">Pretty</button>
+                                    <button id="rawBtn" class="btn btn-sm btn-secondary">Raw</button>
+                                </div>
+                                <button id="copyResponseBtn" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-copy"></i> Copy
+                                </button>
+                            </div>
+                            <div class="response-body" id="responseBody">
+                                <pre><code id="responseContent"></code></pre>
+                            </div>
+                        </div>
+
+                        <!-- Response Headers -->
+                        <div class="tab-panel" id="responseHeadersTab">
+                            <div class="response-headers" id="responseHeaders">
+                                <!-- Response headers will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Sending request...</p>
+        </div>
+    </div>
+
+    <!-- Save Request Modal -->
+    <div class="modal" id="saveModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Save Request</h3>
+                <button class="modal-close" id="closeSaveModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="field-group">
+                    <label for="requestName">Request Name:</label>
+                    <input type="text" id="requestName" placeholder="Enter request name" />
+                </div>
+                <div class="field-group">
+                    <label for="collectionSelect">Collection:</label>
+                    <select id="collectionSelect">
+                        <option value="">Select Collection</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelSaveBtn" class="btn btn-secondary">Cancel</button>
+                <button id="confirmSaveBtn" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/http-client.js"></script>
+    <script src="js/ui-manager.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

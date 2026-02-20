@@ -1,0 +1,199 @@
+spring:
+  application:
+    name: uber-clone
+  
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/rideshare_db
+    username: rideshare_user
+    password: rideshare_password
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      leak-detection-threshold: 60000
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+  
+  # Redis Configuration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+  
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      batch-size: 16384
+      linger-ms: 5
+      buffer-memory: 33554432
+    consumer:
+      group-id: rideshare-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        spring.json.trusted.packages: "com.rideshare.model,com.rideshare.dto"
+  
+  # Mail Configuration (for email notifications)
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+    password: ${MAIL_PASSWORD:your-app-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  
+  # File Upload Configuration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+
+# Management/Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging Configuration
+logging:
+  level:
+    com.rideshare: INFO
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/rideshare.log
+
+# Application Specific Configuration
+rideshare:
+  # JWT Configuration
+  jwt:
+    secret: ${JWT_SECRET:mySecretKey}
+    expiration: 86400000 # 24 hours in milliseconds
+  
+  # Google Maps API
+  google:
+    maps:
+      api-key: ${GOOGLE_MAPS_API_KEY:your-google-maps-api-key}
+  
+  # Payment Configuration
+  stripe:
+    public-key: ${STRIPE_PUBLIC_KEY:pk_test_your_stripe_public_key}
+    secret-key: ${STRIPE_SECRET_KEY:sk_test_your_stripe_secret_key}
+  
+  # Firebase Configuration (for push notifications)
+  firebase:
+    service-account-key: ${FIREBASE_SERVICE_ACCOUNT_KEY:path/to/firebase-service-account.json}
+  
+  # Twilio Configuration (for SMS)
+  twilio:
+    account-sid: ${TWILIO_ACCOUNT_SID:your-twilio-account-sid}
+    auth-token: ${TWILIO_AUTH_TOKEN:your-twilio-auth-token}
+    phone-number: ${TWILIO_PHONE_NUMBER:+1234567890}
+  
+  # AWS S3 Configuration (for file uploads)
+  aws:
+    s3:
+      bucket-name: ${AWS_S3_BUCKET:rideshare-uploads}
+      region: ${AWS_REGION:us-east-1}
+      access-key: ${AWS_ACCESS_KEY:your-aws-access-key}
+      secret-key: ${AWS_SECRET_KEY:your-aws-secret-key}
+  
+  # Rate Limiting Configuration
+  rate-limit:
+    trip-requests:
+      capacity: 10
+      refill-rate: 1
+      refill-period: 60 # seconds
+    driver-location-updates:
+      capacity: 100
+      refill-rate: 10
+      refill-period: 60
+  
+  # Surge Pricing Configuration
+  surge:
+    enabled: true
+    max-multiplier: 3.0
+    calculation-radius-km: 5.0
+    demand-threshold: 0.8 # 80% of available drivers
+  
+  # Trip Configuration
+  trip:
+    max-search-radius-km: 15.0
+    driver-response-timeout-seconds: 30
+    trip-timeout-minutes: 10
+    max-drivers-to-notify: 5
+  
+  # Driver Configuration
+  driver:
+    location-update-interval-seconds: 10
+    max-inactive-minutes: 5
+    min-acceptance-rate: 70.0
+    min-rating: 3.0
+
+# Springdoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+  show-actuator: true

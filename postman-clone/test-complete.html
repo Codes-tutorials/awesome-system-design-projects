@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postman Clone - Complete Test Suite</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            background: white;
+            margin: 1rem 0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-log {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .log-entry {
+            margin: 0.25rem 0;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+        }
+        
+        .log-entry.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .log-entry.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .log-entry.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-loading {
+            background: #ffc107;
+            animation: pulse 1s infinite;
+        }
+        
+        .status-success {
+            background: #28a745;
+        }
+        
+        .status-error {
+            background: #dc3545;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .test-controls {
+            margin: 1rem 0;
+            text-align: center;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0 0.5rem;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .demo-section {
+            margin-top: 2rem;
+        }
+        
+        .demo-request {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .demo-url {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 0.5rem;
+            border: 1px solid #ced4da;
+            border-radius: 3px;
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+        
+        .demo-response {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Postman Clone - Complete Test Suite</h1>
+        <p>Comprehensive testing of all application functionality</p>
+        <div id="overall-status">
+            <span class="status-indicator status-loading"></span>
+            <span id="status-text">Initializing...</span>
+        </div>
+    </div>
+
+    <div class="test-controls">
+        <button id="runTestsBtn" class="btn">Run All Tests</button>
+        <button id="runDemoBtn" class="btn">Run Demo Requests</button>
+        <button id="clearResultsBtn" class="btn">Clear Results</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Test Results</h2>
+        <div id="test-results">
+            <p>Click "Run All Tests" to start the test suite...</p>
+        </div>
+    </div>
+
+    <div class="test-section demo-section">
+        <h2>🎯 Demo API Requests</h2>
+        <p>Test the application with real API endpoints:</p>
+        
+        <div class="demo-request">
+            <h4>GET Request - Fetch User Data</h4>
+            <input type="text" class="demo-url" value="https://jsonplaceholder.typicode.com/users/1" readonly>
+            <button class="btn" onclick="testGetRequest()">Test GET</button>
+            <div id="get-response" class="demo-response" style="display: none;"></div>
+        </div>
+        
+        <div class="demo-request">
+            <h4>POST Request - Create New Post</h4>
+            <input type="text" class="demo-url" value="https://jsonplaceholder.typicode.com/posts" readonly>
+            <button class="btn" onclick="testPostRequest()">Test POST</button>
+            <div id="post-response" class="demo-response" style="display: none;"></div>
+        </div>
+        
+        <div class="demo-request">
+            <h4>GET with Parameters - Search Posts</h4>
+            <input type="text" class="demo-url" value="https://jsonplaceholder.typicode.com/posts?userId=1" readonly>
+            <button class="btn" onclick="testParamsRequest()">Test with Params</button>
+            <div id="params-response" class="demo-response" style="display: none;"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Application Status</h2>
+        <div id="app-status">
+            <p>Loading application modules...</p>
+        </div>
+    </div>
+
+    <!-- Load all application scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/http-client.js"></script>
+    <script src="js/ui-manager.js"></script>
+    <script src="js/app.js"></script>
+    <script src="test-functionality.js"></script>
+
+    <script>
+        let testRunner = null;
+        
+        // Initialize when all scripts are loaded
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                checkApplicationStatus();
+                setupEventListeners();
+            }, 1000);
+        });
+        
+        function checkApplicationStatus() {
+            const statusDiv = document.getElementById('app-status');
+            const overallStatus = document.getElementById('overall-status');
+            const statusText = document.getElementById('status-text');
+            const statusIndicator = overallStatus.querySelector('.status-indicator');
+            
+            let status = [];
+            let allLoaded = true;
+            
+            if (window.storageManager) {
+                status.push('✅ Storage Manager loaded');
+            } else {
+                status.push('❌ Storage Manager failed to load');
+                allLoaded = false;
+            }
+            
+            if (window.httpClient) {
+                status.push('✅ HTTP Client loaded');
+            } else {
+                status.push('❌ HTTP Client failed to load');
+                allLoaded = false;
+            }
+            
+            if (window.uiManager) {
+                status.push('✅ UI Manager loaded');
+            } else {
+                status.push('❌ UI Manager failed to load');
+                allLoaded = false;
+            }
+            
+            if (window.app) {
+                status.push('✅ Main App loaded');
+            } else {
+                status.push('❌ Main App failed to load');
+                allLoaded = false;
+            }
+            
+            statusDiv.innerHTML = status.join('<br>');
+            
+            if (allLoaded) {
+                statusText.textContent = 'All modules loaded successfully';
+                statusIndicator.className = 'status-indicator status-success';
+                document.getElementById('runTestsBtn').disabled = false;
+                document.getElementById('runDemoBtn').disabled = false;
+            } else {
+                statusText.textContent = 'Some modules failed to load';
+                statusIndicator.className = 'status-indicator status-error';
+            }
+        }
+        
+        function setupEventListeners() {
+            document.getElementById('runTestsBtn').addEventListener('click', runAllTests);
+            document.getElementById('runDemoBtn').addEventListener('click', runDemoRequests);
+            document.getElementById('clearResultsBtn').addEventListener('click', clearResults);
+        }
+        
+        async function runAllTests() {
+            const btn = document.getElementById('runTestsBtn');
+            btn.disabled = true;
+            btn.textContent = 'Running Tests...';
+            
+            try {
+                testRunner = new PostmanCloneTests();
+                await testRunner.runAllTests();
+            } catch (error) {
+                console.error('Test execution failed:', error);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Run All Tests';
+            }
+        }
+        
+        async function runDemoRequests() {
+            await testGetRequest();
+            await testPostRequest();
+            await testParamsRequest();
+        }
+        
+        async function testGetRequest() {
+            const responseDiv = document.getElementById('get-response');
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = '<p>🔄 Making GET request...</p>';
+            
+            try {
+                const response = await window.httpClient.makeRequest({
+                    method: 'GET',
+                    url: 'https://jsonplaceholder.typicode.com/users/1',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                responseDiv.innerHTML = `
+                    <h5>Response:</h5>
+                    <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                    <p><strong>Time:</strong> ${response.responseTime}ms</p>
+                    <p><strong>Size:</strong> ${response.size} bytes</p>
+                    <pre>${JSON.stringify(response.data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                responseDiv.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function testPostRequest() {
+            const responseDiv = document.getElementById('post-response');
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = '<p>🔄 Making POST request...</p>';
+            
+            try {
+                const response = await window.httpClient.makeRequest({
+                    method: 'POST',
+                    url: 'https://jsonplaceholder.typicode.com/posts',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: {
+                        type: 'json',
+                        data: {
+                            title: 'Test Post from Postman Clone',
+                            body: 'This is a test post created by our API client',
+                            userId: 1
+                        }
+                    }
+                });
+                
+                responseDiv.innerHTML = `
+                    <h5>Response:</h5>
+                    <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                    <p><strong>Time:</strong> ${response.responseTime}ms</p>
+                    <p><strong>Size:</strong> ${response.size} bytes</p>
+                    <pre>${JSON.stringify(response.data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                responseDiv.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function testParamsRequest() {
+            const responseDiv = document.getElementById('params-response');
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = '<p>🔄 Making request with parameters...</p>';
+            
+            try {
+                const response = await window.httpClient.makeRequest({
+                    method: 'GET',
+                    url: 'https://jsonplaceholder.typicode.com/posts',
+                    params: {
+                        userId: '1'
+                    },
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                responseDiv.innerHTML = `
+                    <h5>Response:</h5>
+                    <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                    <p><strong>Time:</strong> ${response.responseTime}ms</p>
+                    <p><strong>Size:</strong> ${response.size} bytes</p>
+                    <p><strong>Results:</strong> ${Array.isArray(response.data) ? response.data.length : 1} items</p>
+                    <pre>${JSON.stringify(response.data.slice(0, 3), null, 2)}${Array.isArray(response.data) && response.data.length > 3 ? '\n... and more' : ''}</pre>
+                `;
+            } catch (error) {
+                responseDiv.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '<p>Click "Run All Tests" to start the test suite...</p>';
+            document.querySelectorAll('.demo-response').forEach(div => {
+                div.style.display = 'none';
+                div.innerHTML = '';
+            });
+        }
+    </script>
+</body>
+</html>
+</text>
+</invoke>

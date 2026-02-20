@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postman Clone - Quick Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+        
+        .demo-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 1rem 0;
+        }
+        
+        .demo-section {
+            margin: 2rem 0;
+            padding: 1rem;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .success {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        h1, h2 {
+            color: #333;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .status-200 {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-201 {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>🚀 Postman Clone - Quick Demo</h1>
+        <p>This demo shows the core functionality of our REST API client.</p>
+        
+        <div class="demo-section">
+            <h2>📡 HTTP Client Test</h2>
+            <p>Test basic HTTP request functionality:</p>
+            <button class="btn" onclick="testHttpClient()">Test HTTP Client</button>
+            <div id="http-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>💾 Storage Manager Test</h2>
+            <p>Test local storage functionality:</p>
+            <button class="btn" onclick="testStorage()">Test Storage</button>
+            <div id="storage-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🌐 Real API Requests</h2>
+            <p>Make actual requests to JSONPlaceholder API:</p>
+            <button class="btn" onclick="makeGetRequest()">GET Request</button>
+            <button class="btn" onclick="makePostRequest()">POST Request</button>
+            <button class="btn" onclick="makeRequestWithParams()">Request with Params</button>
+            <div id="api-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🔐 Authentication Test</h2>
+            <p>Test authentication header generation:</p>
+            <button class="btn" onclick="testAuth()">Test Auth Headers</button>
+            <div id="auth-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>📊 Application Status</h2>
+            <div id="app-status">Loading...</div>
+        </div>
+    </div>
+
+    <!-- Load application scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/http-client.js"></script>
+    <script src="js/ui-manager.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        // Wait for all scripts to load
+        window.addEventListener('load', () => {
+            setTimeout(checkAppStatus, 1000);
+        });
+        
+        function checkAppStatus() {
+            const statusDiv = document.getElementById('app-status');
+            let status = [];
+            
+            if (window.storageManager) {
+                status.push('✅ Storage Manager: Ready');
+            } else {
+                status.push('❌ Storage Manager: Failed');
+            }
+            
+            if (window.httpClient) {
+                status.push('✅ HTTP Client: Ready');
+            } else {
+                status.push('❌ HTTP Client: Failed');
+            }
+            
+            if (window.uiManager) {
+                status.push('✅ UI Manager: Ready');
+            } else {
+                status.push('❌ UI Manager: Failed');
+            }
+            
+            if (window.app) {
+                status.push('✅ Main App: Ready');
+            } else {
+                status.push('❌ Main App: Failed');
+            }
+            
+            statusDiv.innerHTML = status.join('<br>');
+        }
+        
+        function testHttpClient() {
+            const resultDiv = document.getElementById('http-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            
+            let results = [];
+            
+            // Test URL validation
+            const validUrl = window.httpClient.isValidUrl('https://api.example.com');
+            results.push(`URL Validation (valid): ${validUrl ? '✅' : '❌'}`);
+            
+            const invalidUrl = !window.httpClient.isValidUrl('not-a-url');
+            results.push(`URL Validation (invalid): ${invalidUrl ? '✅' : '❌'}`);
+            
+            // Test auth headers
+            const bearerHeaders = window.httpClient.prepareAuthHeaders({
+                type: 'bearer',
+                token: 'test-token-123'
+            });
+            results.push(`Bearer Auth: ${bearerHeaders.Authorization === 'Bearer test-token-123' ? '✅' : '❌'}`);
+            
+            const basicHeaders = window.httpClient.prepareAuthHeaders({
+                type: 'basic',
+                username: 'user',
+                password: 'pass'
+            });
+            results.push(`Basic Auth: ${basicHeaders.Authorization ? '✅' : '❌'}`);
+            
+            // Test size formatting
+            const sizeFormatted = window.httpClient.formatSize(1024);
+            results.push(`Size Formatting: ${sizeFormatted === '1 KB' ? '✅' : '❌'}`);
+            
+            resultDiv.innerHTML = results.join('<br>');
+            resultDiv.className = 'result success';
+        }
+        
+        function testStorage() {
+            const resultDiv = document.getElementById('storage-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            
+            let results = [];
+            
+            try {
+                // Test settings
+                const settings = window.storageManager.getSettings();
+                results.push(`Settings loaded: ${settings ? '✅' : '❌'}`);
+                
+                // Test history
+                const testRequest = {
+                    method: 'GET',
+                    url: 'https://test.example.com',
+                    headers: { 'Accept': 'application/json' },
+                    body: null
+                };
+                
+                const historyItem = window.storageManager.addToHistory(testRequest);
+                results.push(`Add to history: ${historyItem ? '✅' : '❌'}`);
+                
+                const history = window.storageManager.getHistory();
+                results.push(`Get history: ${Array.isArray(history) ? '✅' : '❌'}`);
+                results.push(`History count: ${history.length}`);
+                
+                // Test collections
+                const collection = window.storageManager.createCollection('Test Collection', 'Demo collection');
+                results.push(`Create collection: ${collection ? '✅' : '❌'}`);
+                
+                if (collection) {
+                    const savedRequest = window.storageManager.addRequestToCollection(collection.id, {
+                        name: 'Test Request',
+                        method: 'GET',
+                        url: 'https://api.test.com',
+                        headers: {},
+                        body: null
+                    });
+                    results.push(`Add request to collection: ${savedRequest ? '✅' : '❌'}`);
+                }
+                
+                const collections = window.storageManager.getCollections();
+                results.push(`Get collections: ${Array.isArray(collections) ? '✅' : '❌'}`);
+                results.push(`Collections count: ${collections.length}`);
+                
+                resultDiv.innerHTML = results.join('<br>');
+                resultDiv.className = 'result success';
+                
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Storage test failed: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        async function makeGetRequest() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '🔄 Making GET request...';
+            
+            try {
+                const response = await window.httpClient.makeRequest({
+                    method: 'GET',
+                    url: 'https://jsonplaceholder.typicode.com/posts/1',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.success) {
+                    resultDiv.innerHTML = `
+                        <strong>GET Request Result:</strong><br>
+                        <span class="status status-${response.status}">Status: ${response.status} ${response.statusText}</span><br>
+                        Response Time: ${response.responseTime}ms<br>
+                        Size: ${window.httpClient.formatSize(response.size)}<br>
+                        <br><strong>Data:</strong><br>
+                        ${JSON.stringify(response.data, null, 2)}
+                    `;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML = `❌ GET request failed: ${response.error}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Request error: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        async function makePostRequest() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '🔄 Making POST request...';
+            
+            try {
+                const response = await window.httpClient.makeRequest({
+                    method: 'POST',
+                    url: 'https://jsonplaceholder.typicode.com/posts',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: {
+                        type: 'json',
+                        data: {
+                            title: 'Demo Post',
+                            body: 'This is a demo post from Postman Clone',
+                            userId: 1
+                        }
+                    }
+                });
+                
+                if (response.success) {
+                    resultDiv.innerHTML = `
+                        <strong>POST Request Result:</strong><br>
+                        <span class="status status-${response.status}">Status: ${response.status} ${response.statusText}</span><br>
+                        Response Time: ${response.responseTime}ms<br>
+                        Size: ${window.httpClient.formatSize(response.size)}<br>
+                        <br><strong>Created Data:</strong><br>
+                        ${JSON.stringify(response.data, null, 2)}
+                    `;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML = `❌ POST request failed: ${response.error}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Request error: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        async function makeRequestWithParams() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '🔄 Making request with parameters...';
+            
+            try {
+                const response = await window.httpClient.makeRequest({
+                    method: 'GET',
+                    url: 'https://jsonplaceholder.typicode.com/posts',
+                    params: {
+                        userId: '1',
+                        _limit: '3'
+                    },
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.success) {
+                    resultDiv.innerHTML = `
+                        <strong>Request with Parameters Result:</strong><br>
+                        <span class="status status-${response.status}">Status: ${response.status} ${response.statusText}</span><br>
+                        Response Time: ${response.responseTime}ms<br>
+                        Size: ${window.httpClient.formatSize(response.size)}<br>
+                        Results: ${Array.isArray(response.data) ? response.data.length : 1} items<br>
+                        <br><strong>Data (first 3 items):</strong><br>
+                        ${JSON.stringify(response.data, null, 2)}
+                    `;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML = `❌ Request with params failed: ${response.error}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Request error: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        function testAuth() {
+            const resultDiv = document.getElementById('auth-result');
+            resultDiv.style.display = 'block';
+            
+            let results = [];
+            
+            // Test Bearer token
+            const bearerAuth = window.httpClient.prepareAuthHeaders({
+                type: 'bearer',
+                token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
+            });
+            results.push(`Bearer Token: ${bearerAuth.Authorization || 'Not set'}`);
+            
+            // Test Basic auth
+            const basicAuth = window.httpClient.prepareAuthHeaders({
+                type: 'basic',
+                username: 'demo_user',
+                password: 'demo_pass'
+            });
+            results.push(`Basic Auth: ${basicAuth.Authorization || 'Not set'}`);
+            
+            // Test no auth
+            const noAuth = window.httpClient.prepareAuthHeaders({
+                type: 'none'
+            });
+            results.push(`No Auth: ${Object.keys(noAuth).length === 0 ? 'Correctly empty' : 'Has headers'}`);
+            
+            resultDiv.innerHTML = results.join('<br>');
+            resultDiv.className = 'result success';
+        }
+    </script>
+</body>
+</html>
+</text>
+</invoke>

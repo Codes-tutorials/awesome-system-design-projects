@@ -1,0 +1,192 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 10
+    connection-timeout: 20000
+    max-connections: 8192
+    accept-count: 100
+
+spring:
+  application:
+    name: ecommerce-order-service
+  
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order_db
+    username: ${DB_USERNAME:order_user}
+    password: ${DB_PASSWORD:order_pass}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 50
+          fetch_size: 100
+        order_inserts: true
+        order_updates: true
+        generate_statistics: false
+        cache:
+          use_second_level_cache: true
+          use_query_cache: true
+          region:
+            factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
+
+  # Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 50
+          max-idle: 20
+          min-idle: 10
+          max-wait: 2000ms
+
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      batch-size: 32768
+      linger-ms: 5
+      buffer-memory: 67108864
+      compression-type: snappy
+    consumer:
+      group-id: order-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.ecommerce.order.event"
+        max.poll.records: 100
+        session.timeout.ms: 30000
+        heartbeat.interval.ms: 10000
+
+  # Caching Configuration
+  cache:
+    type: hazelcast
+    hazelcast:
+      config: classpath:hazelcast.xml
+
+# Custom Application Properties
+order:
+  # Flash Sale Configuration
+  flash-sale:
+    enabled: true
+    max-orders-per-second: 10000
+    queue-size: 100000
+    processing-threads: 20
+    
+  # Rate Limiting
+  rate-limit:
+    orders-per-user-per-minute: 10
+    orders-per-user-per-hour: 100
+    global-orders-per-second: 50000
+    
+  # Inventory Management
+  inventory:
+    check-timeout: 500ms
+    reserve-timeout: 1000ms
+    circuit-breaker:
+      failure-rate-threshold: 50
+      wait-duration-in-open-state: 30s
+      sliding-window-size: 100
+      
+  # Payment Processing
+  payment:
+    timeout: 5000ms
+    retry-attempts: 3
+    circuit-breaker:
+      failure-rate-threshold: 30
+      wait-duration-in-open-state: 60s
+      
+  # Order Processing
+  processing:
+    async-enabled: true
+    batch-size: 100
+    batch-timeout: 1000ms
+    max-retry-attempts: 3
+    
+  # Database Sharding
+  sharding:
+    enabled: true
+    shard-count: 16
+    strategy: user-id-hash
+
+# External Service Configuration
+external-services:
+  inventory-service:
+    base-url: ${INVENTORY_SERVICE_URL:http://localhost:8081}
+    timeout: 2000ms
+    max-connections: 100
+    
+  payment-service:
+    base-url: ${PAYMENT_SERVICE_URL:http://localhost:8082}
+    timeout: 5000ms
+    max-connections: 50
+    
+  user-service:
+    base-url: ${USER_SERVICE_URL:http://localhost:8083}
+    timeout: 1000ms
+    max-connections: 100
+
+# Monitoring Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,threaddump,heapdump
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+      slo:
+        http.server.requests: 10ms, 50ms, 100ms, 200ms, 500ms
+
+# Logging Configuration
+logging:
+  level:
+    com.ecommerce.order: INFO
+    org.springframework.kafka: WARN
+    org.hibernate.SQL: WARN
+    org.springframework.web: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId},%X{spanId}] %logger{36} - %msg%n"
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
